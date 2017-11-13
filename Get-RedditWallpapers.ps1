@@ -119,6 +119,6 @@ catch {
     Write-Error "An error occurred attempting to download images from $subReddit!"
 }
 finally {
-	Write-Progress -Activity "Downloading images..." -Completed
+    Write-Progress -Activity "Downloading images..." -Completed
     Remove-BadFiles
 }
