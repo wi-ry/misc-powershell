@@ -14,7 +14,7 @@ It's a little rough around the edges. Feel free to improve upon it! I recently c
 ## Get-LockScreenWallpapers.ps1
 Windows 10 is constantly updating your lock screen with its curated, personalized slideshow of images in Windows Spotlight.
 
-This script will copy all the wallpapers from "$env:LOCALAPPDATA\Packages\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\LocalState\Assets" and remove the unneccessary/smaller files in the directory and rename the file extensions automatically!
+This script will copy all the desktop wallpapers from "$env:LOCALAPPDATA\Packages\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\LocalState\Assets" to a directory automatically! Just update the first line of the script with your desired destination.
 
 ## New-GeneratedPassword.ps1
 Creates one or more passwords. Options include password length, minimum number of non-alphanumeric characters, and number of passwords to be generated. Returns an array of values.
