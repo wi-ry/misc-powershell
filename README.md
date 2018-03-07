@@ -18,3 +18,6 @@ This script will copy all the desktop wallpapers from "$env:LOCALAPPDATA\Package
 
 ## New-GeneratedPassword.ps1
 Creates one or more passwords. Options include password length, minimum number of non-alphanumeric characters, and number of passwords to be generated. Returns an array of values.
+
+## New-RandomString.ps1
+Generates a random string of the given length. Defaults to 20 characters
