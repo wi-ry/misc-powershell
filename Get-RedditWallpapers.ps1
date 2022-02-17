@@ -18,15 +18,17 @@ param (
 	[string]$wallpaperRoot = "C:\Wallpapers",
 	[string]$subReddit = "EarthPorn",
 	[int]$minWidth = 1920,
-	[int]$minHeight = 1080
+	[int]$minHeight = 1080,
+	[ValidateSet("new","top","hot","rising")][String]$sort = "new",
+	[bool]$ignorePortrait = $true
 )
 
 
-workflow Get-Wallpapers ($destination,$subReddit,$minWidth,$minHeight) {
-	$images = Invoke-RestMethod https://www.reddit.com/r/$subReddit/hot/.json -Method Get -Body @{limit="100"}
+workflow Get-Wallpapers ($destination,$subReddit,$minWidth,$minHeight,$sort,$ignorePortrait) {
+	$images = Invoke-RestMethod https://www.reddit.com/r/$subReddit/$sort/.json -Method Get -Body @{limit="100"}
 	$current = 0
 	$total = $images.data.dist
-	Write-Output "Downloading images to $destination..."
+	Write-Output "Downloading images from /r/$subReddit sorted by $sort to $destination..."
 
     ForEach($child in $images.data.children) {
         $current++
@@ -35,13 +37,15 @@ workflow Get-Wallpapers ($destination,$subReddit,$minWidth,$minHeight) {
         ## Sanitize Reddit Thread Title for use as a Filename ##
         $title = Remove-InvalidFileNameChars($child.data.title)
 
-
         if ($child.data.url -match "\.(jpe?)|(pn)g$") {
 
             if (($child.data.preview.images[0].source.height -lt $minHeight) -or ($child.data.preview.images[0].source.width -lt $minWidth )) {
                 Write-Output "$title dimensions smaller than requested, skipped."
                 } ## end if
-            else{
+			elseif (($ignorePortrait -eq $true) -and ($child.data.preview.images[0].source.height -gt $child.data.preview.images[0].source.width)) {
+				Write-Output "$title is a portrait mode image, skipped."
+			}
+            else {
                 ## Create Filename from Reddit Thread Title, and File Extension from URL ##
                 $fileName = $title + $url.Substring($url.LastIndexOf('.'))
                 ## Create Counter for Download Progress Meter
@@ -93,10 +97,10 @@ $destination = Join-Path -Path $wallpaperRoot -ChildPath $subReddit
 if(-not (Test-Path $destination)) { New-Item -Path $destination -ItemType Directory | Out-Null }
 
 try { 
-    Get-Wallpapers $destination $subReddit $minWidth $minHeight
+    Get-Wallpapers $destination $subReddit $minWidth $minHeight $sort $ignorePortrait
 }
 catch {
-    Write-Error "An error occurred attempting to download images from $subReddit!"
+    Write-Error "An error occurred attempting to download images from /r/$subReddit!"
 }
 finally {
     Write-Progress -Activity "Downloading images..." -Completed
