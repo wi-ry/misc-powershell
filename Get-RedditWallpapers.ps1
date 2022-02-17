@@ -9,7 +9,7 @@ param (
 )
 
 workflow Get-Wallpapers ($destination,$subReddit) {
-	$images = Invoke-RestMethod https://www.reddit.com/r/$subReddit/new/.json -Method Get -Body @{limit="100"} | ForEach-Object { $_.data.children.data.url } | ? { $_ -match "\.(jpe?)|pn)g$" }
+	$images = Invoke-RestMethod https://www.reddit.com/r/$subReddit/new/.json -Method Get -Body @{limit="100"} | ForEach-Object { $_.data.children.data.url } | ? { $_ -match "\.(jpe?)|(pn)g$" }
 	$current = 0
 	$total = $images.count
 	Write-Output "Downloading images to $destination..."
