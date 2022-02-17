@@ -57,7 +57,7 @@ workflow Get-Wallpapers ($destination,$subReddit,$minWidth,$minHeight) {
 			        Start-BitsTransfer -Source $url -Destination $fullPath
                 } ## end else
             } ## end else
-            } ## end if
+        } ## end if
     } ## end foreach
 } ## end workflow
 
