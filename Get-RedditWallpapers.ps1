@@ -1,12 +1,12 @@
 <###############################################################################
 ## Get-RedditWallpapers.ps1
-## Contributors: Pandages, MrAusnadian, SpaceDeerEdith
+## .Contributors: Pandages, MrAusnadian, SpaceDeerEdith
 ## Version: 2.0
 ##
-## SYNOPSIS
+## .SYNOPSIS
 ## Downloads wallpaper images from a user-specified subreddit.
 ## 
-## DEPENDENCIES
+## .DEPENDENCIES
 ## Background Intelligent Transfer Service (BITS)
 ## Reddit / JSON
 ###############################################################################>
@@ -15,8 +15,8 @@
 [Alias()]
 [OutputType([int])]
 param (
-	[string]$wallpaperRoot = "C:\Wallpaper",
-	[string]$subReddit = "Earthporn",
+	[string]$wallpaperRoot = "C:\Wallpapers",
+	[string]$subReddit = "EarthPorn",
 	[int]$minWidth = 1920,
 	[int]$minHeight = 1080
 )
