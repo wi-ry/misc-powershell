@@ -15,9 +15,9 @@
 [Alias()]
 [OutputType([int])]
 param (
-	[string]$wallpaperRoot = "E:\Temp\Wallpaper",
+	[string]$wallpaperRoot = "C:\Wallpaper",
 	[string]$subReddit = "Earthporn",
-	[int]$minWidth = 2560,
+	[int]$minWidth = 1920,
 	[int]$minHeight = 1080
 )
 
