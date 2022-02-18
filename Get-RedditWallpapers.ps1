@@ -16,7 +16,7 @@
 [OutputType([int])]
 param (
 	[string]$wallpaperRoot = "C:\Wallpapers",
-	[string]$subReddit = "EarthPorn",
+	[string[]]$subReddits = @("EarthPorn","Wallpapers"),
 	[int]$minWidth = 1920,
 	[int]$minHeight = 1080,
 	[ValidateSet("new","top","hot","rising")][String]$sort = "new",
@@ -93,15 +93,17 @@ Function Remove-InvalidFileNameChars {
 
 ## BEGIN SCRIPT EXECUTION ##
 
-$destination = Join-Path -Path $wallpaperRoot -ChildPath $subReddit
-if(-not (Test-Path $destination)) { New-Item -Path $destination -ItemType Directory | Out-Null }
+foreach ($subReddit in $subReddits) {
+	$destination = Join-Path -Path $wallpaperRoot -ChildPath $subReddit
+	if(-not (Test-Path $destination)) { New-Item -Path $destination -ItemType Directory | Out-Null }
 
-try { 
-    Get-Wallpapers $destination $subReddit $minWidth $minHeight $sort $ignorePortrait
-}
-catch {
-    Write-Error "An error occurred attempting to download images from /r/$subReddit!"
-}
-finally {
-    Write-Progress -Activity "Downloading images..." -Completed
+	try { 
+		Get-Wallpapers $destination $subReddit $minWidth $minHeight $sort $ignorePortrait
+	}
+	catch {
+		Write-Error "An error occurred attempting to download images from /r/$subReddit!"
+	}
+	finally {
+		Write-Progress -Activity "Downloading images..." -Completed
+	}
 }

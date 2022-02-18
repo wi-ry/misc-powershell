@@ -6,14 +6,14 @@ Miscellaneous PowerShell Scripts
 This script will pull the latest 100 images down from a given subreddit.
 
 Parameters available:
-* `sort` - "new", "top", "hot" or "rising" [Defaults to 'new']
-* `subReddit` [Defaults to 'EarthPorn']
-* `wallpaperRoot` [Defaults to 'C:\Wallpapers']
-* `minWidth` / `minHeight` [Defaults to width '1920' and height '1080']
-* `ignorePortrait` - Ignore portrait images ($true) or include them ($false) [Defaults to $true]
+* `sort` - "new", "top", "hot" or "rising" [Defaults to `new`]
+* `subReddits` Array of subreddits [Defaults to `"EarthPorn","Wallpapers"`]
+* `wallpaperRoot` [Defaults to `C:\Wallpapers`]
+* `minWidth` / `minHeight` [Defaults to width `1920` and height `1080`]
+* `ignorePortrait` - Ignore portrait images (`$true`) or include them (`$false`) [Defaults to `$true`]
 
 Examples:
-* `.\Get-RedditWallpapers.ps1 -subReddit ultrahdwallpapers`
+* `.\Get-RedditWallpapers.ps1 -subReddits EarthPorn,Pics,Wallpapers`
 * `.\Get-RedditWallpapers.ps1 -wallpaperRoot D:\alternateRoot`
 * `.\Get-RedditWallpapers.ps1 -minWidth 1920 -minHeight 1200`
 * `.\Get-RedditWallpapers.ps1 -sort rising`
@@ -21,9 +21,9 @@ Examples:
 
 
 ## Get-LockScreenWallpapers.ps1
-Windows 10 is constantly updating your lock screen with its curated, personalized slideshow of images in Windows Spotlight.
+Windows 10/11 is constantly updating your lock screen with its curated, personalized slideshow of images in Windows Spotlight.
 
-This script will copy all the desktop wallpapers from "$env:LOCALAPPDATA\Packages\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\LocalState\Assets" to a directory automatically! Just update the first line of the script with your desired destination.
+This script will copy all the desktop wallpapers from `$env:LOCALAPPDATA\Packages\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\LocalState\Assets` to a directory automatically! Just update the first line of the script with your desired destination.
 
 
 ## New-GeneratedPassword.ps1
