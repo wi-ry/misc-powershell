@@ -24,7 +24,7 @@ param (
 )
 
 
-workflow Get-Wallpapers ($destination,$subReddit,$minWidth,$minHeight,$sort,$ignorePortrait) {
+Function Get-Wallpapers ($destination,$subReddit,$minWidth,$minHeight,$sort,$ignorePortrait) {
 	$images = Invoke-RestMethod https://www.reddit.com/r/$subReddit/$sort/.json -Method Get -Body @{limit="100"}
 	$current = 0
 	$total = $images.data.dist
