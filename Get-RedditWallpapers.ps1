@@ -1,7 +1,7 @@
 <###############################################################################
 ## Get-RedditWallpapers.ps1
 ## .Contributors: Pandages, MrAusnadian, SpaceDeerEdith
-## Version: 2.0
+## Version: 3.0
 ##
 ## .SYNOPSIS
 ## Downloads wallpaper images from a user-specified subreddit.
@@ -15,95 +15,82 @@
 [Alias()]
 [OutputType([int])]
 param (
-	[string]$wallpaperRoot = "C:\Wallpapers",
-	[string[]]$subReddits = @("EarthPorn","Wallpapers"),
-	[int]$minWidth = 1920,
-	[int]$minHeight = 1080,
-	[ValidateSet("new","top","hot","rising")][String]$sort = "new",
-	[bool]$ignorePortrait = $true
+    [string]$wallpaperRoot = "C:\Wallpapers",
+    [string[]]$subReddits = @("EarthPorn", "Wallpapers", "spaceporn", "Art"),
+    [int]$minWidth = 1920,
+    [int]$minHeight = 1080,
+    [ValidateSet("new", "top", "hot", "rising")]
+    [String]$sort = "new",
+    [bool]$ignorePortrait = $true
 )
 
+function Get-Wallpapers {
+    param (
+        [string]$destination,
+        [string]$subReddit,
+        [int]$minWidth,
+        [int]$minHeight,
+        [string]$sort,
+        [bool]$ignorePortrait
+    )
 
-Function Get-Wallpapers ($destination,$subReddit,$minWidth,$minHeight,$sort,$ignorePortrait) {
-	$images = Invoke-RestMethod https://www.reddit.com/r/$subReddit/$sort/.json -Method Get -Body @{limit="100"}
-	$current = 0
-	$total = $images.data.dist
-	Write-Output "Downloading images from /r/$subReddit sorted by $sort to $destination..."
+    Start-Sleep 5
+    $images = Invoke-RestMethod "https://www.reddit.com/r/$subReddit/$sort/.json" -Method Get -Body @{ limit = "100" }
+    $total = $images.data.dist
+    Write-Output "Downloading images from /r/$subReddit sorted by $sort to $destination..."
 
-    ForEach($child in $images.data.children) {
-        $current++
-        ## Aliases to make later uses easier to read ##
+    foreach ($child in $images.data.children) {
         $url = $child.data.url
-        ## Sanitize Reddit Thread Title for use as a Filename ##
-        $title = Remove-InvalidFileNameChars($child.data.title)
+        $title = Remove-InvalidFileNameChars $child.data.title
 
-        if ($child.data.url -match "\.(jpe?)|(pn)g$") {
+        if ($url -match "\.(jpe?)|(pn)g$" -and
+            ($child.data.preview.images[0].source.height -ge $minHeight) -and
+            ($child.data.preview.images[0].source.width -ge $minWidth) -and
+            (-not ($ignorePortrait -and $child.data.preview.images[0].source.height -gt $child.data.preview.images[0].source.width))
+        ) {
+            $fileName = "$title$($url.Substring($url.LastIndexOf('.')))"
+            $fullPath = Join-Path -Path $destination -ChildPath $fileName
 
-            if (($child.data.preview.images[0].source.height -lt $minHeight) -or ($child.data.preview.images[0].source.width -lt $minWidth )) {
-                Write-Output "$title dimensions smaller than requested, skipped."
-                } ## end if
-			elseif (($ignorePortrait -eq $true) -and ($child.data.preview.images[0].source.height -gt $child.data.preview.images[0].source.width)) {
-				Write-Output "$title is a portrait mode image, skipped."
-			}
-            else {
-                ## Create Filename from Reddit Thread Title, and File Extension from URL ##
-                $fileName = $title + $url.Substring($url.LastIndexOf('.'))
-                ## Create Counter for Download Progress Meter
-		        $percent = $current / $total * 100
-                ## Update Progress Meter
-		        Write-Progress -Activity "Downloading images..." -Status "Downloading $fileName from $url..." -PercentComplete $percent
-                $fullPath = Join-Path -Path $destination -ChildPath $fileName
-		        if (Test-Path ($fullPath)) {
-			        Write-Output " * Skipping $fileName - File already exists!"
-		        } ## end if
-		        else {
-                    ## Download file using BITS ##
-			        Start-BitsTransfer -Source $url -Destination $fullPath
-                } ## end else
-            } ## end else
-        } ## end if
-    } ## end foreach
-} ## end workflow
+            if (Test-Path $fullPath) {
+                Write-Output " * Skipping $fileName - File already exists!"
+            } else {
+                $percent = ++$current / $total * 100
+                Write-Progress -Activity "Downloading images..." -Status "Downloading $fileName from $url..." -PercentComplete $percent
 
+                try {
+                    Start-BitsTransfer -Source $url -Destination $fullPath
+                } catch {
+                    Write-Error "Failed to download $url"
+                }
+            }
+        } else {
+            Write-Output "$title skipped."
+        }
+    }
+}
 
-<#
-    .Synopsis
-    Removes characters from a string which would make that string an Invalid filename or path.
-
-    .Notes
-    NAME: Remove-InvalidFileNameChars
-    AUTHOR: Ansgar Wiechers https://stackoverflow.com/users/1630171/ansgar-wiechers
-    
-    .Link
-    https://stackoverflow.com/questions/23066783/how-to-strip-illegal-characters-before-trying-to-save-filenames
-#>
 Function Remove-InvalidFileNameChars {
-  param(
-    [Parameter(Mandatory=$true,
-      Position=0,
-      ValueFromPipeline=$true,
-      ValueFromPipelineByPropertyName=$true)]
-    [String]$Name
-  )
+    param (
+        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
+        [String]$Name
+    )
 
-  $invalidChars = [IO.Path]::GetInvalidFileNameChars() -join ''
-  $re = "[{0}]" -f [RegEx]::Escape($invalidChars)
-  return ($Name -replace $re)
+    $invalidChars = [IO.Path]::GetInvalidFileNameChars() -join ''
+    $re = "[{0}]" -f [RegEx]::Escape($invalidChars)
+    return $Name -replace $re
 }
 
 ## BEGIN SCRIPT EXECUTION ##
 
 foreach ($subReddit in $subReddits) {
-	$destination = Join-Path -Path $wallpaperRoot -ChildPath $subReddit
-	if(-not (Test-Path $destination)) { New-Item -Path $destination -ItemType Directory | Out-Null }
+    $destination = Join-Path -Path $wallpaperRoot -ChildPath $subReddit
+    if (-not (Test-Path $destination)) { New-Item -Path $destination -ItemType Directory | Out-Null }
 
-	try { 
-		Get-Wallpapers $destination $subReddit $minWidth $minHeight $sort $ignorePortrait
-	}
-	catch {
-		Write-Error "An error occurred attempting to download images from /r/$subReddit!"
-	}
-	finally {
-		Write-Progress -Activity "Downloading images..." -Completed
-	}
+    try {
+        Get-Wallpapers -destination $destination -subReddit $subReddit -minWidth $minWidth -minHeight $minHeight -sort $sort -ignorePortrait $ignorePortrait
+    } catch {
+        Write-Error "An error occurred attempting to download images from /r/$subReddit!"
+    } finally {
+        Write-Progress -Activity "Downloading images..." -Completed
+    }
 }
