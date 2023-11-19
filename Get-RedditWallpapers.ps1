@@ -17,8 +17,8 @@
 param (
     [string]$wallpaperRoot = "C:\Wallpapers",
     [string[]]$subReddits = @("EarthPorn", "Wallpapers", "spaceporn", "Art"),
-    [int]$minWidth = 3440,
-    [int]$minHeight = 1440,
+    [int]$minWidth = 1920,
+    [int]$minHeight = 1080,
     [ValidateSet("new", "top", "hot", "rising")]
     [String]$sort = "new",
     [bool]$ignorePortrait = $true
