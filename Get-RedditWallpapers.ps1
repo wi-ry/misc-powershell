@@ -1,7 +1,7 @@
 <###############################################################################
 ## Get-RedditWallpapers.ps1
 ## .Contributors: Pandages, MrAusnadian, SpaceDeerEdith
-## Version: 3.0
+## Version: 3.1
 ##
 ## .SYNOPSIS
 ## Downloads wallpaper images from a user-specified subreddit.
@@ -31,21 +31,24 @@ function Get-Wallpapers {
         [int]$minWidth,
         [int]$minHeight,
         [string]$sort,
-        [bool]$ignorePortrait
+        [bool]$ignorePortrait,
+        [int]$start = 100
     )
 
     Start-Sleep 5
-    $images = Invoke-RestMethod "https://www.reddit.com/r/$subReddit/$sort/.json" -Method Get -Body @{ limit = "100" }
+    $images = Invoke-RestMethod "https://www.reddit.com/r/$subReddit/$sort/.json?start=$start" -Method Get -Body @{ limit = "100" }
     $total = $images.data.dist
     Write-Output "Downloading images from /r/$subReddit sorted by $sort to $destination..."
 
     foreach ($child in $images.data.children) {
         $url = $child.data.url
         $title = Remove-InvalidFileNameChars $child.data.title
+        [int]$height = $child.data.preview.images[0].source.height
+        [int]$width = $child.data.preview.images[0].source.width
 
         if ($url -match "\.(jpe?)|(pn)g$" -and
-            ($child.data.preview.images[0].source.height -ge $minHeight) -and
-            ($child.data.preview.images[0].source.width -ge $minWidth) -and
+            ($height -ge $minHeight) -and
+            ($width -ge $minWidth) -and
             (-not ($ignorePortrait -and $child.data.preview.images[0].source.height -gt $child.data.preview.images[0].source.width))
         ) {
             $fileName = "$title$($url.Substring($url.LastIndexOf('.')))"
@@ -64,7 +67,7 @@ function Get-Wallpapers {
                 }
             }
         } else {
-            Write-Output "$title skipped."
+            Write-Output "$title skipped - Resolution ($width x $height) less than minimum resolution ($minWidth x $minHeight)"
         }
     }
 }
@@ -88,6 +91,7 @@ foreach ($subReddit in $subReddits) {
 
     try {
         Get-Wallpapers -destination $destination -subReddit $subReddit -minWidth $minWidth -minHeight $minHeight -sort $sort -ignorePortrait $ignorePortrait
+        Get-Wallpapers -destination $destination -subReddit $subReddit -minWidth $minWidth -minHeight $minHeight -sort $sort -ignorePortrait $ignorePortrait -start 100
     } catch {
         Write-Error "An error occurred attempting to download images from /r/$subReddit!"
     } finally {
